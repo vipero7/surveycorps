@@ -30,7 +30,8 @@ class User(AbstractUser, GlobalAbstractModel):
 
     def __str__(self):
         return self.email
-    
+
+
 class Team(GlobalAbstractModel):
     """Team model"""
 

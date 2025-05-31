@@ -32,9 +32,7 @@ DJANGO_CORE_APPS = [
 ]
 
 THIRD_PARTY_APPS = ["rest_framework"]
-SC_APPS = [
-    "sc_api.apps.schema"
-]
+SC_APPS = ["sc_api.apps.schema"]
 
 INSTALLED_APPS = DJANGO_CORE_APPS + THIRD_PARTY_APPS + SC_APPS
 
