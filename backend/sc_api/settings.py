@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 from decouple import config
@@ -31,14 +32,25 @@ DJANGO_CORE_APPS = [
     "django.contrib.staticfiles",
 ]
 
-THIRD_PARTY_APPS = ["rest_framework"]
-SC_APPS = ["sc_api.apps.schema"]
+THIRD_PARTY_APPS = ["rest_framework", "rest_framework_simplejwt", "corsheaders"]
+SC_APPS = ["sc_api.apps.schema", "sc_api.apps.authentication"]
 
 INSTALLED_APPS = DJANGO_CORE_APPS + THIRD_PARTY_APPS + SC_APPS
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "sc_api.apps.authentication.base.CustomAuthentication",
+        # "rest_framework.authentication.BasicAuthentication",
+        # 'rest_framework.authentication.TokenAuthentication',
+        "rest_framework.authentication.SessionAuthentication",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticatedOrReadOnly",),
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -174,4 +186,33 @@ LOGGING = {
     "filters": FILTERS,
     "handlers": HANDLERS,
     "loggers": LOGGERS,
+}
+
+# CORS
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    CORS_ALLOWED_ORIGINS = [
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+    ]
+CORS_ALLOW_CREDENTIALS = True
+
+
+# Simple JWT
+SIMPLE_JWT = {
+    "USER_ID_FIELD": "oid",
+    "USER_ID_CLAIM": "mpl",
+    "AUTH_COOKIE": "access_token",  # Cookie name. Enables cookies if value is set.
+    "REFRESH_COOKIE": "refresh_token",  # Refresh token name. Enables cookies if value is set.
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # Access token life time set to 15 minutes
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # Refresh token life time set to 1 day
+    "INVITATION_TOKEN_LIFETIME": timedelta(days=10),
+    "AUTH_COOKIE_DOMAIN": "surveycorps.com",  # A string like "example.com", or None for standard domain cookie.
+    "AUTH_COOKIE_SECURE": True,  # Whether the auth cookies should be secure (https:// only).
+    "AUTH_COOKIE_HTTP_ONLY": True,  # Http only cookie flag.It's not fetch by javascript.
+    "AUTH_COOKIE_PATH": "/",  # The path of the auth cookie.
+    "AUTH_COOKIE_SAMESITE": "Lax",  # Whether to set the flag restricting cookie leaks on cross-site requests.
+    # This can be 'Lax', 'Strict', or None to disable the flag.
 }
