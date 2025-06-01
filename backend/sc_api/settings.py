@@ -71,7 +71,7 @@ WSGI_APPLICATION = "sc_api.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.postgresql",
+        "ENGINE": config("django.db.backends.postgresql", default="django.db.backends.sqlite3"),
         "NAME": config("DATABASE_NAME", default=BASE_DIR / "db.sqlite3"),
         "USER": config("DATABASE_USER", default="user"),
         "PASSWORD": config("DATABASE_USER_PASSWORD", default="password"),
