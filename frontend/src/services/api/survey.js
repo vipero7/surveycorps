@@ -10,4 +10,6 @@ export const surveysAPI = {
     getPublic: oid => apiClient.get(`/survey/${oid}/fill/`),
     submitResponse: (oid, data) => apiClient.post(`/survey/${oid}/fill/`, data),
     getResponses: oid => apiClient.get(`/survey/${oid}/responses/`),
+    checkSubmission: (oid, email) => apiClient.post(`/survey/${oid}/check-submission/`, { email }),
+    getSubmission: responseOid => apiClient.get(`/survey/submission/${responseOid}/view/`),
 };

@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import PageHeader from '../../components/layout/PageHeader';
-import QuestionSection from '../../components/survey/QuestionSection';
-import SurveyBasicInfo from '../../components/survey/SurveyBasicInfo';
-import SurveyFormLayout from '../../components/survey/SurveyFormLayout';
-import SurveyHeader from '../../components/survey/SurveyHeader';
-import SurveySidebar from '../../components/survey/SurveySidebar';
-import TabNavigation from '../../components/survey/TabNavigation';
+import {
+    QuestionSection,
+    SurveyBasicInfo,
+    SurveyFormLayout,
+    SurveyHeader,
+    SurveySidebar,
+    TabNavigation,
+} from '../../components/survey';
 import useSurveyForm from '../../hooks/useSurveyForm';
 
 const CreatePage = () => {

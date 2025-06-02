@@ -4,7 +4,7 @@ import { surveysAPI } from '../services/api/survey';
 
 export const useSurveyChat = () => {
     const [messages, setMessages] = useState([]);
-    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-3); // Start with user info
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(-3);
     const [responses, setResponses] = useState({});
     const [userInfo, setUserInfo] = useState({
         full_name: '',
@@ -18,7 +18,6 @@ export const useSurveyChat = () => {
     const [surveyQuestions, setSurveyQuestions] = useState([]);
     const [initialized, setInitialized] = useState(false);
 
-    // Required user info questions
     const userInfoQuestions = [
         {
             id: 'full_name',
@@ -40,17 +39,43 @@ export const useSurveyChat = () => {
         },
     ];
 
+    const checkExistingSubmission = async email => {
+        try {
+            const response = await surveysAPI.checkSubmission(surveyId, email);
+            const data = response.data.data;
+
+            if (data.has_submitted) {
+                setMessages(prev => [
+                    ...prev,
+                    {
+                        type: 'bot',
+                        content: `It looks like you've already submitted a response to this survey on ${new Date(data.submitted_at).toLocaleDateString()}. Redirecting you to view your submission...`,
+                        timestamp: new Date(),
+                        isInfo: true,
+                    },
+                ]);
+
+                setTimeout(() => {
+                    window.location.href = data.view_submission_url;
+                }, 3000);
+
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            console.error('Error checking submission:', error);
+            return true;
+        }
+    };
+
     const initializeSurvey = (surveyData, oid) => {
-        // Prevent double initialization completely
         if (initialized || surveyId === oid) return;
 
         setSurveyId(oid);
         setSurveyQuestions(surveyData.questions || []);
         setInitialized(true);
 
-        console.log('Survey questions:', surveyData.questions); // Debug log
-
-        // Add welcome messages
         const welcomeMessages = [
             {
                 type: 'bot',
@@ -68,9 +93,7 @@ export const useSurveyChat = () => {
 
         setMessages(welcomeMessages);
 
-        // Start with first user info question after a delay
         setTimeout(() => {
-            // Double check we haven't already started
             if (currentQuestionIndex === -3) {
                 askUserInfoQuestion(0);
             }
@@ -81,24 +104,18 @@ export const useSurveyChat = () => {
         if (index < userInfoQuestions.length) {
             const question = userInfoQuestions[index];
 
-            // Additional safety check - don't add if messages already contain this question
             const questionAlreadyAsked = messages.some(
                 msg => msg.type === 'bot' && msg.content === question.question_text
             );
 
-            if (questionAlreadyAsked) {
-                return;
-            }
+            if (questionAlreadyAsked) return;
 
             setMessages(prev => {
-                // Final check at the moment of adding
                 const alreadyExists = prev.some(
                     msg => msg.type === 'bot' && msg.content === question.question_text
                 );
 
-                if (alreadyExists) {
-                    return prev;
-                }
+                if (alreadyExists) return prev;
 
                 return [
                     ...prev,
@@ -117,8 +134,6 @@ export const useSurveyChat = () => {
         if (index < surveyQuestions.length) {
             const question = surveyQuestions[index];
             const questionText = question.question || question.question_text;
-
-            console.log('Asking survey question:', questionText, 'Question object:', question); // Debug log
 
             setMessages(prev => [
                 ...prev,
@@ -159,17 +174,10 @@ export const useSurveyChat = () => {
     };
 
     const handleAnswerSubmit = async () => {
-        console.log('handleAnswerSubmit called, currentQuestionIndex:', currentQuestionIndex); // Debug log
-        console.log('currentAnswer:', currentAnswer); // Debug log
-
-        // Handle user info questions (indices -3, -2, -1)
         if (currentQuestionIndex < 0) {
-            const userInfoIndex = currentQuestionIndex + 3; // Convert to 0, 1, 2
+            const userInfoIndex = currentQuestionIndex + 3;
             const currentQuestion = userInfoQuestions[userInfoIndex];
 
-            console.log('Processing user info question:', currentQuestion.id); // Debug log
-
-            // Validate required user info
             if (!validateAnswer(currentAnswer, currentQuestion)) {
                 setMessages(prev => [
                     ...prev,
@@ -183,18 +191,12 @@ export const useSurveyChat = () => {
                 return;
             }
 
-            // Store user info
             const field = currentQuestion.id;
-            setUserInfo(prev => {
-                const newUserInfo = {
-                    ...prev,
-                    [field]: currentAnswer,
-                };
-                console.log('Updated user info:', newUserInfo); // Debug log
-                return newUserInfo;
-            });
+            setUserInfo(prev => ({
+                ...prev,
+                [field]: currentAnswer,
+            }));
 
-            // Add user's answer to messages
             setMessages(prev => [
                 ...prev,
                 {
@@ -206,7 +208,6 @@ export const useSurveyChat = () => {
 
             setCurrentAnswer('');
 
-            // Move to next user info question or start survey
             const nextIndex = currentQuestionIndex + 1;
             if (nextIndex < 0) {
                 setCurrentQuestionIndex(nextIndex);
@@ -214,7 +215,6 @@ export const useSurveyChat = () => {
                     askUserInfoQuestion(nextIndex + 3);
                 }, 500);
             } else {
-                // User info complete, start survey questions
                 setCurrentQuestionIndex(0);
                 setTimeout(() => {
                     setMessages(prev => [
@@ -231,7 +231,6 @@ export const useSurveyChat = () => {
                             askSurveyQuestion(0);
                         }, 1000);
                     } else {
-                        // No survey questions, complete immediately
                         setTimeout(() => {
                             setMessages(prev => [
                                 ...prev,
@@ -250,21 +249,14 @@ export const useSurveyChat = () => {
             return;
         }
 
-        // Handle survey questions
         if (currentQuestionIndex >= 0 && currentQuestionIndex < surveyQuestions.length) {
             const currentQuestion = surveyQuestions[currentQuestionIndex];
             const questionType = currentQuestion.type || currentQuestion.question_type;
 
-            console.log('Processing survey question:', currentQuestion); // Debug log
-            console.log('Question type:', questionType); // Debug log
-            console.log('Current answer:', currentAnswer); // Debug log
-
             if (!currentAnswer && questionType !== 'checkbox') {
-                console.log('No answer provided for required question'); // Debug log
                 return;
             }
 
-            // Add user's answer to messages
             setMessages(prev => [
                 ...prev,
                 {
@@ -274,23 +266,15 @@ export const useSurveyChat = () => {
                 },
             ]);
 
-            // Store the response using order as key
             const questionKey = `question_${currentQuestion.order || currentQuestionIndex + 1}`;
 
-            console.log('Storing response with key:', questionKey, 'value:', currentAnswer); // Debug log
-
-            setResponses(prev => {
-                const newResponses = {
-                    ...prev,
-                    [questionKey]: currentAnswer,
-                };
-                console.log('Updated responses:', newResponses); // Debug log
-                return newResponses;
-            });
+            setResponses(prev => ({
+                ...prev,
+                [questionKey]: currentAnswer,
+            }));
 
             setCurrentAnswer('');
 
-            // Move to next question or complete
             const nextIndex = currentQuestionIndex + 1;
             if (nextIndex < surveyQuestions.length) {
                 setCurrentQuestionIndex(nextIndex);
@@ -298,7 +282,6 @@ export const useSurveyChat = () => {
                     askSurveyQuestion(nextIndex);
                 }, 500);
             } else {
-                // Survey complete
                 setTimeout(() => {
                     setMessages(prev => [
                         ...prev,
@@ -329,33 +312,59 @@ export const useSurveyChat = () => {
     const submitSurvey = async () => {
         setSubmitting(true);
 
-        console.log('Submitting survey with data:'); // Debug log
-        console.log('responses:', responses); // Debug log
-        console.log('userInfo:', userInfo); // Debug log
-
         try {
             const payload = {
                 responses: responses,
                 respondent_info: userInfo,
             };
 
-            console.log('Final payload:', payload); // Debug log
-
-            await surveysAPI.submitResponse(surveyId, payload);
+            const response = await surveysAPI.submitResponse(surveyId, payload);
+            const responseData = response.data.data;
 
             setMessages(prev => [
                 ...prev,
                 {
                     type: 'bot',
                     content:
-                        '✅ Your responses have been submitted successfully! Thank you for participating.',
+                        '✅ Your responses have been submitted successfully! Redirecting you to view your submission...',
                     timestamp: new Date(),
                     isSuccess: true,
                 },
             ]);
+
             setIsComplete(true);
+
+            setTimeout(() => {
+                if (responseData.view_submission_url) {
+                    window.location.href = responseData.view_submission_url;
+                } else if (responseData.response_id) {
+                    window.location.href = `/submission/${responseData.response_id}/view`;
+                }
+            }, 2000);
         } catch (error) {
-            console.error('Error submitting survey:', error); // Debug log
+            console.error('Error submitting survey:', error);
+
+            if (error.response?.status === 409) {
+                const errorData = error.response.data.data;
+                if (errorData?.already_submitted && errorData?.view_submission_url) {
+                    setMessages(prev => [
+                        ...prev,
+                        {
+                            type: 'bot',
+                            content:
+                                '⚠️ You have already submitted a response to this survey. Redirecting you to view your previous submission...',
+                            timestamp: new Date(),
+                            isInfo: true,
+                        },
+                    ]);
+
+                    setTimeout(() => {
+                        window.location.href = errorData.view_submission_url;
+                    }, 3000);
+                    return;
+                }
+            }
+
             setMessages(prev => [
                 ...prev,
                 {
@@ -392,5 +401,6 @@ export const useSurveyChat = () => {
         initializeSurvey,
         handleAnswerSubmit,
         getCurrentQuestion,
+        checkExistingSubmission,
     };
 };

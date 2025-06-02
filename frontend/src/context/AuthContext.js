@@ -19,7 +19,6 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is already logged in on app start
         const cookies = new Cookies();
         let accessToken = cookies.get('access_token') || localStorage.getItem('access_token');
         const userData = localStorage.getItem('user');
@@ -37,14 +36,12 @@ export const AuthProvider = ({ children }) => {
 
             const cookies = new Cookies();
 
-            // Store tokens in both cookies (for Django backend) and localStorage (for frontend)
             cookies.set('access_token', access, { path: '/' });
             cookies.set('refresh_token', refresh, { path: '/' });
 
             localStorage.setItem('access_token', access);
             localStorage.setItem('refresh_token', refresh);
 
-            // Store user data
             localStorage.setItem('user', JSON.stringify(user));
             setUser(user);
 
@@ -59,14 +56,18 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await authAPI.logout();
+        } catch (error) {
+            console.error('Logout API call failed:', error);
+        }
+
         const cookies = new Cookies();
 
-        // Clear cookies
         cookies.remove('access_token', { path: '/' });
         cookies.remove('refresh_token', { path: '/' });
 
-        // Clear localStorage
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('user');

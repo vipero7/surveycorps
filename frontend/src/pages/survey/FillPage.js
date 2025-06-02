@@ -3,10 +3,7 @@ import { useParams } from 'react-router-dom';
 
 import { AlertCircle } from 'lucide-react';
 
-import ChatCompletion from '../../components/survey/Chat/ChatCompletion';
-import ChatHeader from '../../components/survey/Chat/ChatHeader';
-import ChatInput from '../../components/survey/Chat/ChatInput';
-import ChatMessages from '../../components/survey/Chat/ChatMessages';
+import { ChatCompletion, ChatHeader, ChatInput, ChatMessages } from '../../components/survey/Chat';
 import { useSurveyChat } from '../../hooks/useSurveyChat';
 import { surveysAPI } from '../../services/api/survey';
 import { extractApiData } from '../../utils/apiHelpers';
@@ -16,6 +13,7 @@ const FillPage = () => {
     const [survey, setSurvey] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [checkingSubmission, setCheckingSubmission] = useState(false);
     const initRef = useRef(false);
 
     const {
@@ -30,6 +28,7 @@ const FillPage = () => {
         currentAnswer,
         setCurrentAnswer,
         getCurrentQuestion,
+        checkExistingSubmission,
     } = useSurveyChat();
 
     useEffect(() => {
@@ -39,14 +38,13 @@ const FillPage = () => {
     }, [oid]);
 
     const fetchSurvey = async () => {
-        if (initRef.current) return; // Already initialized
+        if (initRef.current) return;
 
         try {
             const response = await surveysAPI.getPublic(oid);
             const surveyData = extractApiData(response);
             setSurvey(surveyData);
 
-            // Only initialize once
             if (surveyData && !initRef.current) {
                 initRef.current = true;
                 initializeSurvey(surveyData, oid);
@@ -59,10 +57,25 @@ const FillPage = () => {
         }
     };
 
+    const handleEmailSubmission = async email => {
+        setCheckingSubmission(true);
+        const result = await checkExistingSubmission(email);
+        setCheckingSubmission(false);
+        return result;
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-gray-600">Loading survey...</div>
+            </div>
+        );
+    }
+
+    if (checkingSubmission) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-gray-600">Checking your previous submissions...</div>
             </div>
         );
     }
@@ -84,19 +97,23 @@ const FillPage = () => {
         <div className="min-h-screen bg-gray-50">
             <div className="max-w-2xl mx-auto">
                 <ChatHeader survey={survey} />
-
                 <ChatMessages messages={messages} />
-
                 {!isComplete && currentQuestion && (
                     <ChatInput
                         question={currentQuestion}
                         currentAnswer={currentAnswer}
                         setCurrentAnswer={setCurrentAnswer}
-                        onSubmit={handleAnswerSubmit}
+                        onSubmit={
+                            currentQuestion.question_type === 'email'
+                                ? () =>
+                                      handleEmailSubmission(currentAnswer).then(shouldContinue => {
+                                          if (shouldContinue) handleAnswerSubmit();
+                                      })
+                                : handleAnswerSubmit
+                        }
                         submitting={submitting}
                     />
                 )}
-
                 {isComplete && <ChatCompletion />}
             </div>
         </div>

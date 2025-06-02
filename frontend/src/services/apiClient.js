@@ -8,18 +8,52 @@ const apiClient = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    withCredentials: true, // Enable cookies
+    withCredentials: true,
 });
 
-// Request interceptor to add auth token
+let isRefreshing = false;
+let failedQueue = [];
+
+const processQueue = (error, token = null) => {
+    failedQueue.forEach(prom => {
+        if (error) {
+            prom.reject(error);
+        } else {
+            prom.resolve(token);
+        }
+    });
+
+    failedQueue = [];
+};
+
+const clearAuthData = () => {
+    const cookies = new Cookies();
+    cookies.remove('access_token', { path: '/' });
+    cookies.remove('refresh_token', { path: '/' });
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user');
+};
+
+const callLogoutEndpoint = async () => {
+    try {
+        await axios.post(
+            `${API_BASE_URL}auth/logout/`,
+            {},
+            {
+                withCredentials: true,
+            }
+        );
+    } catch (error) {
+        console.error('Logout endpoint call failed:', error);
+    }
+};
+
 apiClient.interceptors.request.use(
     config => {
         const cookies = new Cookies();
-
-        // First try to get token from cookie (preferred by Django backend)
         let token = cookies.get('access_token');
 
-        // Fallback to localStorage if cookie doesn't exist
         if (!token) {
             token = localStorage.getItem('access_token');
         }
@@ -35,20 +69,33 @@ apiClient.interceptors.request.use(
     }
 );
 
-// Response interceptor to handle errors
 apiClient.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config;
 
-        // Handle 401 errors with token refresh
         if (
             error.response?.status === 401 &&
             !originalRequest._retry &&
             originalRequest.url !== '/auth/login/' &&
-            originalRequest.url !== '/auth/refresh-token/'
+            originalRequest.url !== '/auth/token/refresh/' &&
+            originalRequest.url !== '/auth/logout/'
         ) {
+            if (isRefreshing) {
+                return new Promise((resolve, reject) => {
+                    failedQueue.push({ resolve, reject });
+                })
+                    .then(token => {
+                        originalRequest.headers.Authorization = `Bearer ${token}`;
+                        return apiClient(originalRequest);
+                    })
+                    .catch(err => {
+                        return Promise.reject(err);
+                    });
+            }
+
             originalRequest._retry = true;
+            isRefreshing = true;
 
             const cookies = new Cookies();
             const refreshToken =
@@ -56,35 +103,51 @@ apiClient.interceptors.response.use(
 
             if (refreshToken) {
                 try {
-                    // Attempt to refresh the token
-                    const response = await apiClient.post('/auth/refresh-token/', {
-                        refresh: refreshToken,
-                    });
+                    const response = await axios.post(
+                        `${API_BASE_URL}auth/token/refresh/`,
+                        {
+                            refresh: refreshToken,
+                        },
+                        {
+                            withCredentials: true,
+                        }
+                    );
 
-                    const newAccessToken = response.data.data?.access || response.data.access;
+                    const newAccessToken = response.data.access;
+                    const newRefreshToken = response.data.refresh;
 
                     if (newAccessToken) {
-                        // Update both cookie and localStorage
                         cookies.set('access_token', newAccessToken, { path: '/' });
                         localStorage.setItem('access_token', newAccessToken);
 
-                        // Retry the original request
+                        if (newRefreshToken) {
+                            cookies.set('refresh_token', newRefreshToken, { path: '/' });
+                            localStorage.setItem('refresh_token', newRefreshToken);
+                        }
+
+                        processQueue(null, newAccessToken);
+
                         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
                         return apiClient(originalRequest);
                     }
                 } catch (refreshError) {
                     console.error('Token refresh failed:', refreshError);
+                    processQueue(refreshError, null);
+
+                    await callLogoutEndpoint();
+                    clearAuthData();
+                    window.location.href = '/login';
+                } finally {
+                    isRefreshing = false;
                 }
+            } else {
+                isRefreshing = false;
+                processQueue(error, null);
+
+                await callLogoutEndpoint();
+                clearAuthData();
+                window.location.href = '/login';
             }
-
-            // If refresh fails, clear auth data and redirect
-            cookies.remove('access_token', { path: '/' });
-            cookies.remove('refresh_token', { path: '/' });
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            localStorage.removeItem('user');
-
-            window.location.href = '/login';
         }
 
         return Promise.reject(error);

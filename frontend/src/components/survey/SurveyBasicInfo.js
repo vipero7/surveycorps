@@ -89,23 +89,6 @@ const SurveyBasicInfo = ({ survey, onChange }) => {
                         />
                     </div>
                 </div>
-
-                {/* Multiple Responses */}
-                <div className="flex items-center space-x-3">
-                    <input
-                        type="checkbox"
-                        id="allow_multiple_responses"
-                        checked={survey.allow_multiple_responses || false}
-                        onChange={e => handleChange('allow_multiple_responses', e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                    />
-                    <label
-                        htmlFor="allow_multiple_responses"
-                        className="text-sm font-medium text-gray-700"
-                    >
-                        Allow multiple responses from the same participant
-                    </label>
-                </div>
             </div>
         </div>
     );

@@ -7,6 +7,7 @@ import { NotificationProvider } from './context/NotificationContext';
 import LoginPage from './pages/auth/LoginPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 import FillPage from './pages/survey/FillPage';
+import SubmissionViewPage from './pages/survey/SubmissionViewPage';
 
 function App() {
     return (
@@ -20,6 +21,10 @@ function App() {
 
                             {/* Public survey completion - NO AUTH REQUIRED */}
                             <Route path="/survey/:oid/fill" element={<FillPage />} />
+                            <Route
+                                path="/survey/submission/:responseOid/view"
+                                element={<SubmissionViewPage />}
+                            />
 
                             {/* Protected routes */}
                             <Route

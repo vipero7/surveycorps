@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ArrowLeft, Globe, Share } from 'lucide-react';
+import { ArrowLeft, Share } from 'lucide-react';
 
 import Button from '../../components/common/Button';
-import Analytics from '../../components/survey/Detail/Analytics';
-import Configuration from '../../components/survey/Detail/Configuration';
-import Header from '../../components/survey/Detail/Header';
-import Links from '../../components/survey/Detail/Links';
-import Questions from '../../components/survey/Detail/Questions';
-import StatsCards from '../../components/survey/Detail/StatsCards';
+import {
+    Analytics,
+    Configuration,
+    Header,
+    Links,
+    Questions,
+    StatsCards,
+} from '../../components/survey/Detail';
 import { useNotification } from '../../context/NotificationContext';
 import { surveysAPI } from '../../services/api/survey';
 import { extractApiData, extractApiError } from '../../utils/apiHelpers';

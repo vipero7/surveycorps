@@ -5,7 +5,7 @@ import { ArrowLeft, Check, Copy, Mail } from 'lucide-react';
 
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/layout/PageHeader';
-import SurveyHeader from '../../components/survey/SurveyHeader';
+import { SurveyHeader } from '../../components/survey';
 import { useNotification } from '../../context/NotificationContext';
 import { emailAPI } from '../../services/api/email';
 import { surveysAPI } from '../../services/api/survey';
