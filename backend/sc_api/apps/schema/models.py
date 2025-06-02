@@ -93,7 +93,7 @@ class SurveyResponse(GlobalAbstractModel):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.survey.title} - {self.respondent.first_name}"
+        return f"{self.survey.title} - {self.respondent.full_name}"
 
     @property
     def response_url(self):

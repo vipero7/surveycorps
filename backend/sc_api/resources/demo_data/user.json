@@ -1,0 +1,9 @@
+{
+    "email": "user@teamsurvey.com",
+    "first_name": "Admin",
+    "last_name": "User",
+    "is_superuser": true,
+    "is_staff": true,
+    "is_active": true,
+    "role": "admin"
+}

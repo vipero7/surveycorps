@@ -161,8 +161,7 @@ class SurveyResponseAdmin(admin.ModelAdmin):
     search_fields = (
         "survey__title",
         "respondent__email",
-        "respondent__first_name",
-        "respondent__last_name",
+        "respondent__full_name",
     )
     ordering = ("-created_at",)
     readonly_fields = ("oid", "response_url_link", "completed_at")
@@ -177,7 +176,7 @@ class SurveyResponseAdmin(admin.ModelAdmin):
     )
 
     def respondent_name(self, obj):
-        return f"{obj.respondent.first_name} {obj.respondent.last_name}".strip()
+        return obj.respondent.full_name
 
     respondent_name.short_description = "Name"
 
