@@ -4,7 +4,8 @@ import MainLayout from '../../components/layout/MainLayout';
 import ContentContainer from '../../components/layout/ContentContainer';
 import CreatePage from '../survey/CreatePage';
 import ListPage from '../survey/ListPage';
-import DistributePage from '../survey/DistributePage'; // Add this import
+import DetailPage from '../survey/DetailPage';
+import DistributePage from '../survey/DistributePage';
 
 const DashboardPage = () => {
     return (
@@ -20,7 +21,12 @@ const DashboardPage = () => {
 
                 <Route path="/surveys/create" element={<CreatePage />} />
 
-                {/* Add this route for the distribute page */}
+                <Route path="/surveys/:oid" element={
+                    <ContentContainer>
+                        <DetailPage />
+                    </ContentContainer>
+                } />
+
                 <Route path="/surveys/:id/distribute" element={<DistributePage />} />
 
                 <Route path="/analytics" element={

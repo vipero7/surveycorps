@@ -11,7 +11,6 @@ const Navbar = () => {
 
     const navItems = [
         { path: '/dashboard/surveys', label: 'Surveys', exact: false },
-        { path: '/dashboard/analytics', label: 'Analytics', icon: BarChart3, exact: true }
     ];
 
     const isActive = (item) => {

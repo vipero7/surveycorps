@@ -180,7 +180,7 @@ const ListPage = () => {
                                         <button
                                             onClick={() => navigate(`/dashboard/surveys/${survey.oid}`)}
                                             className="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-md"
-                                            title="View survey"
+                                            title="View survey insights"
                                         >
                                             <Eye className="w-4 h-4" />
                                         </button>
