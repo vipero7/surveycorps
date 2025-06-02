@@ -5,14 +5,23 @@ from sc_api.apps.survey.views import (
     SurveyPublicView,
     SurveyPublishView,
     SurveySendInvitesView,
+    SurveySubmissionCheckView,
+    SurveySubmissionView,
 )
 
 app_name = "survey"
-
 urlpatterns = [
     path("", SurveyListCreateView.as_view(), name="survey_list_create"),
     path("<str:oid>/", SurveyDetailView.as_view(), name="survey_detail"),
     path("<str:oid>/publish/", SurveyPublishView.as_view(), name="survey_publish"),
-    path("<str:oid>/fill/", SurveyPublicView.as_view(), name="survey_fill"),
+    path("<str:oid>/fill/", SurveyPublicView.as_view(), name="survey_public"),
     path("<str:oid>/send-invites/", SurveySendInvitesView.as_view(), name="survey_send_invites"),
+    path(
+        "<str:oid>/check-submission/", SurveySubmissionCheckView.as_view(), name="check_submission"
+    ),
+    path(
+        "submission/<str:response_oid>/view/",
+        SurveySubmissionView.as_view(),
+        name="submission_view",
+    ),
 ]

@@ -178,3 +178,65 @@ def send_test_email(to_email):
         error_message = str(e)
         logger.error(f"Test email failed: {error_message}")
         return {"success": False, "error": error_message}
+
+
+def send_submission_confirmation_email(survey_response, view_submission_url):
+    """
+    Send confirmation email to respondent with link to view their submission.
+
+    Args:
+        survey_response: SurveyResponse instance
+        view_submission_url: URL where user can view their submitted data
+
+    Returns:
+        dict: Result of email sending operation
+    """
+    logger.info(f"Sending submission confirmation email for response: {survey_response.oid}")
+
+    respondent = survey_response.respondent
+    survey = survey_response.survey
+
+    # Create email content
+    subject = f"Thank you for completing: {survey.title}"
+
+    body = f"""Hello {respondent.full_name},
+
+Thank you for completing the survey: "{survey.title}"
+
+Your responses have been successfully submitted on {survey_response.created_at.strftime('%B %d, %Y at %I:%M %p')}.
+
+You can view your submitted responses at any time by clicking the link below:
+{view_submission_url}
+
+Response ID: {survey_response.oid}
+Survey: {survey.title}
+Submitted: {survey_response.created_at.strftime('%B %d, %Y at %I:%M %p')}
+
+If you have any questions about this survey, please contact the survey administrator.
+
+Best regards,
+Survey Team
+"""
+
+    logger.info(f"Sending confirmation email to: {respondent.email}")
+
+    try:
+        send_mail(
+            subject=subject,
+            message=body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[respondent.email],
+            fail_silently=False,
+        )
+
+        logger.info(f"Confirmation email sent successfully to: {respondent.email}")
+        return {
+            "success": True,
+            "message": f"Confirmation email sent to {respondent.email}",
+            "recipient": respondent.email,
+        }
+
+    except Exception as e:
+        error_message = str(e)
+        logger.error(f"Failed to send confirmation email to {respondent.email}: {error_message}")
+        return {"success": False, "error": error_message, "recipient": respondent.email}

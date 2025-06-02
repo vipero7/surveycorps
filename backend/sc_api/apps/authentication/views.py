@@ -5,8 +5,10 @@ from django.contrib.auth import authenticate, get_user_model
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from sc_api.apps.authentication.serializers import (
     LoginSerializer,
@@ -113,3 +115,50 @@ class LoginView(GenericAPIView):
         except Exception as e:
             logger.error("Error while generating response")
             raise e
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        logger.info("Starting logout process")
+        try:
+            refresh_token = request.COOKIES.get(settings.SIMPLE_JWT["REFRESH_COOKIE"])
+
+            if refresh_token:
+                logger.info("Blacklisting refresh token")
+                try:
+                    token = RefreshToken(refresh_token)
+                    token.blacklist()
+                    logger.info("Successfully blacklisted refresh token")
+                except TokenError as e:
+                    logger.warning(f"Token already blacklisted or invalid: {e}")
+            else:
+                logger.warning("No refresh token found in cookies")
+
+            logger.info("Creating logout response")
+            response = Response(
+                {"success": True, "message": "Successfully logged out"}, status=status.HTTP_200_OK
+            )
+
+            logger.info("Clearing cookies")
+            response.delete_cookie(
+                key=settings.SIMPLE_JWT["AUTH_COOKIE"],
+                domain=settings.SIMPLE_JWT["AUTH_COOKIE_DOMAIN"],
+                path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
+            )
+            response.delete_cookie(
+                key=settings.SIMPLE_JWT["REFRESH_COOKIE"],
+                domain=settings.SIMPLE_JWT["AUTH_COOKIE_DOMAIN"],
+                path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
+            )
+
+            logger.info("Logout successful")
+            return response
+
+        except Exception as e:
+            logger.error(f"Error during logout: {e}")
+            return Response(
+                {"success": False, "error": "Logout failed"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )

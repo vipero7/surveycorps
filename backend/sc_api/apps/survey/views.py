@@ -1,5 +1,6 @@
 import re
 
+from django.conf import settings
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
 from rest_framework import status
@@ -13,7 +14,10 @@ from sc_api.apps.survey.serializers import (
     SurveyListSerializer,
     SurveyPublicSerializer,
 )
-from sc_api.apps.utils.email import send_survey_emails
+from sc_api.apps.utils.email import (
+    send_submission_confirmation_email,
+    send_survey_emails,
+)
 
 
 class SurveyListCreateView(APIView):
@@ -164,7 +168,6 @@ class SurveyPublicView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, oid):
-        """Get public survey for filling out (no authentication required)"""
         try:
             survey = get_object_or_404(Survey.objects.filter(status="published"), oid=oid)
 
@@ -184,7 +187,6 @@ class SurveyPublicView(APIView):
             )
 
     def post(self, request, oid):
-        """Submit survey response (no authentication required)"""
         try:
             survey = get_object_or_404(Survey.objects.filter(status="published"), oid=oid)
 
@@ -194,21 +196,15 @@ class SurveyPublicView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Get response data
             responses = request.data.get("responses", {})
             respondent_info = request.data.get("respondent_info", {})
 
-            print(f"Received responses: {responses}")  # Debug log
-            print(f"Received respondent_info: {respondent_info}")  # Debug log
-
-            # Validate required data
             if not respondent_info:
                 return Response(
                     {"success": False, "error": "Respondent information is required."},
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Validate required respondent info
             required_fields = ["full_name", "email", "phone"]
             for field in required_fields:
                 if not respondent_info.get(field):
@@ -220,7 +216,6 @@ class SurveyPublicView(APIView):
                         status=status.HTTP_400_BAD_REQUEST,
                     )
 
-            # Validate email format
             email_pattern = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
             if not email_pattern.match(respondent_info.get("email", "")):
                 return Response(
@@ -228,16 +223,36 @@ class SurveyPublicView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Get or create respondent
             respondent, created = Respondent.objects.get_or_create(
                 email=respondent_info.get("email"),
                 defaults={
                     "full_name": respondent_info.get("full_name"),
-                    "phone_number": respondent_info.get("phone"),  # Note: phone_number not phone
+                    "phone_number": respondent_info.get("phone"),
                 },
             )
 
-            # Update respondent info if it already exists but info is different
+            existing_response = SurveyResponse.objects.filter(
+                survey=survey, respondent=respondent, is_complete=True
+            ).first()
+
+            if existing_response:
+                view_submission_url = (
+                    f"{settings.FRONTEND_BASE_URL}/survey/submission/{existing_response.oid}/view"
+                )
+                return Response(
+                    {
+                        "success": False,
+                        "error": "You have already submitted a response to this survey.",
+                        "data": {
+                            "already_submitted": True,
+                            "response_id": existing_response.oid,
+                            "view_submission_url": view_submission_url,
+                            "submitted_at": existing_response.created_at,
+                        },
+                    },
+                    status=status.HTTP_409_CONFLICT,
+                )
+
             if not created:
                 updated = False
                 if respondent.full_name != respondent_info.get("full_name"):
@@ -249,39 +264,58 @@ class SurveyPublicView(APIView):
                 if updated:
                     respondent.save()
 
-            print(f"Respondent: {respondent} (created: {created})")  # Debug log
-
-            # Create survey response record
             survey_response = SurveyResponse.objects.create(
                 survey=survey,
                 respondent=respondent,
-                answers=responses,  # Use 'answers' not 'responses'
+                answers=responses,
                 is_complete=True,
             )
 
-            print(f"Survey response created: {survey_response.oid}")  # Debug log
-            print(f"Answers stored: {survey_response.answers}")  # Debug log
+            view_submission_url = (
+                f"{settings.FRONTEND_BASE_URL}/survey/submission/{survey_response.oid}/view"
+            )
+
+            try:
+                email_result = send_submission_confirmation_email(
+                    survey_response=survey_response, view_submission_url=view_submission_url
+                )
+
+                if email_result["success"]:
+                    print(
+                        f"Confirmation email sent successfully to {survey_response.respondent.email}"
+                    )
+                else:
+                    print(f"Failed to send confirmation email: {email_result['error']}")
+
+            except Exception as email_error:
+                print(f"Error sending confirmation email: {str(email_error)}")
 
             return Response(
                 {
                     "success": True,
-                    "message": "Thank you for your response!",
+                    "message": "Thank you for your response! A confirmation email has been sent to you.",
                     "data": {
                         "response_id": survey_response.oid,
                         "survey_title": survey.title,
                         "submitted_at": survey_response.created_at,
                         "completed_at": survey_response.completed_at,
                         "answers_count": len(responses),
+                        "view_submission_url": view_submission_url,
+                        "email_sent": (
+                            email_result.get("success", False)
+                            if "email_result" in locals()
+                            else False
+                        ),
                     },
                 },
                 status=status.HTTP_201_CREATED,
             )
 
         except Exception as e:
-            print(f"Error in survey submission: {str(e)}")  # Debug log
+            print(f"Error in survey submission: {str(e)}")
             import traceback
 
-            traceback.print_exc()  # Debug log
+            traceback.print_exc()
             return Response(
                 {"success": False, "error": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -289,21 +323,17 @@ class SurveyPublicView(APIView):
 
 
 class SurveySendInvitesView(APIView):
-    """Send survey invitations via email."""
-
     permission_classes = [IsAuthenticated]
 
     def post(self, request, oid):
         try:
             survey = get_object_or_404(Survey, oid=oid, team=request.user.team)
 
-            # Extract data
             data = request.data
             emails = data.get("emails", [])
             survey_url = data.get("survey_url")
             custom_message = data.get("custom_message", "")
 
-            # Validate inputs
             if not emails or not isinstance(emails, list):
                 return Response(
                     {"success": False, "error": "Email list is required"},
@@ -316,7 +346,6 @@ class SurveySendInvitesView(APIView):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
-            # Send emails using utility function
             result = send_survey_emails(
                 survey=survey,
                 emails=emails,
@@ -338,6 +367,88 @@ class SurveySendInvitesView(APIView):
                 {"success": True, "message": success_message, "data": result},
                 status=status.HTTP_200_OK,
             )
+
+        except Exception as e:
+            return Response(
+                {"success": False, "error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+class SurveySubmissionView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request, response_oid):
+        try:
+            survey_response = get_object_or_404(
+                SurveyResponse.objects.select_related("survey", "respondent"), oid=response_oid
+            )
+
+            survey = survey_response.survey
+
+            response_data = {
+                "response_id": survey_response.oid,
+                "survey": {
+                    "title": survey.title,
+                    "description": survey.description,
+                    "questions": survey.questions,
+                },
+                "respondent": {
+                    "full_name": survey_response.respondent.full_name,
+                    "email": survey_response.respondent.email,
+                    "phone": survey_response.respondent.phone_number,
+                },
+                "answers": survey_response.answers,
+                "submitted_at": survey_response.created_at,
+                "completed_at": survey_response.completed_at,
+                "is_complete": survey_response.is_complete,
+            }
+
+            return Response({"success": True, "data": response_data})
+
+        except Exception:
+            return Response(
+                {"success": False, "error": "Submission not found or not available."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+
+class SurveySubmissionCheckView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def post(self, request, oid):
+        try:
+            survey = get_object_or_404(Survey.objects.filter(status="published"), oid=oid)
+            email = request.data.get("email")
+
+            if not email:
+                return Response({"success": True, "data": {"has_submitted": False}})
+
+            try:
+                respondent = Respondent.objects.get(email=email)
+                existing_response = SurveyResponse.objects.filter(
+                    survey=survey, respondent=respondent, is_complete=True
+                ).first()
+
+                if existing_response:
+                    view_url = f"{settings.FRONTEND_BASE_URL}/survey/submission/{existing_response.oid}/view"
+                    return Response(
+                        {
+                            "success": True,
+                            "data": {
+                                "has_submitted": True,
+                                "response_id": existing_response.oid,
+                                "view_submission_url": view_url,
+                                "submitted_at": existing_response.created_at,
+                            },
+                        }
+                    )
+
+            except Respondent.DoesNotExist:
+                pass
+
+            return Response({"success": True, "data": {"has_submitted": False}})
 
         except Exception as e:
             return Response(

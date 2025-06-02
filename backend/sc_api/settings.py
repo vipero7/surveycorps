@@ -32,7 +32,12 @@ DJANGO_CORE_APPS = [
     "django.contrib.staticfiles",
 ]
 
-THIRD_PARTY_APPS = ["rest_framework", "rest_framework_simplejwt", "corsheaders"]
+THIRD_PARTY_APPS = [
+    "rest_framework",
+    "rest_framework_simplejwt",
+    "corsheaders",
+    "rest_framework_simplejwt.token_blacklist",
+]
 SC_APPS = ["sc_api.apps.schema", "sc_api.apps.authentication", "sc_api.apps.survey"]
 
 INSTALLED_APPS = DJANGO_CORE_APPS + THIRD_PARTY_APPS + SC_APPS
@@ -202,17 +207,25 @@ CORS_ALLOW_CREDENTIALS = True
 SIMPLE_JWT = {
     "USER_ID_FIELD": "oid",
     "USER_ID_CLAIM": "mpl",
-    "AUTH_COOKIE": "access_token",  # Cookie name. Enables cookies if value is set.
-    "REFRESH_COOKIE": "refresh_token",  # Refresh token name. Enables cookies if value is set.
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),  # Access token life time set to 15 minutes
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),  # Refresh token life time set to 1 day
+    "AUTH_COOKIE": "access_token",
+    "REFRESH_COOKIE": "refresh_token",
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
     "INVITATION_TOKEN_LIFETIME": timedelta(days=10),
-    "AUTH_COOKIE_DOMAIN": "surveycorps.com",  # A string like "example.com", or None for standard domain cookie.
-    "AUTH_COOKIE_SECURE": True,  # Whether the auth cookies should be secure (https:// only).
-    "AUTH_COOKIE_HTTP_ONLY": True,  # Http only cookie flag.It's not fetch by javascript.
-    "AUTH_COOKIE_PATH": "/",  # The path of the auth cookie.
-    "AUTH_COOKIE_SAMESITE": "Lax",  # Whether to set the flag restricting cookie leaks on cross-site requests.
-    # This can be 'Lax', 'Strict', or None to disable the flag.
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "UPDATE_LAST_LOGIN": False,
+    "ALGORITHM": "HS256",
+    "VERIFYING_KEY": None,
+    "AUDIENCE": None,
+    "ISSUER": None,
+    "JWK_URL": None,
+    "LEEWAY": 0,
+    "AUTH_COOKIE_DOMAIN": "surveycorps.com",
+    "AUTH_COOKIE_SECURE": True,
+    "AUTH_COOKIE_HTTP_ONLY": True,
+    "AUTH_COOKIE_PATH": "/",
+    "AUTH_COOKIE_SAMESITE": "Lax",
 }
 
 # Email Configuration
@@ -223,3 +236,7 @@ EMAIL_USE_TLS = config("EMAIL_USE_TLS", default=True, cast=bool)
 EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@surveycorps.com")
+
+FRONTEND_PROTOCOL = config("FRONTEND_PROTOCOL", default="http")
+FRONTEND_HOST = config("FRONTEND_HOST", default="localhost:3000")
+FRONTEND_BASE_URL = f"{FRONTEND_PROTOCOL}://{FRONTEND_HOST}"
