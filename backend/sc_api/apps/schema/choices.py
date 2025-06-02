@@ -2,6 +2,7 @@ ROLE_CHOICES = [
     ("admin", "Admin"),
     ("default", "Default"),
 ]
+
 SURVEY_STATUS_CHOICES = [
     ("draft", "Draft"),
     ("published", "Published"),

@@ -4,31 +4,35 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from sc_api.apps.schema.abstract_models import GlobalAbstractModel
-from sc_api.apps.schema.choices import ROLE_CHOICES, SURVEY_STATUS_CHOICES
+from sc_api.apps.schema.choices import (
+    ROLE_CHOICES,
+    SURVEY_CATEGORY_CHOICES,
+    SURVEY_STATUS_CHOICES,
+)
 from sc_api.apps.schema.managers import UserManager
 
 
 class Respondent(GlobalAbstractModel):
     email = models.EmailField(unique=True, validators=[EmailValidator()])
     phone_number = models.CharField(max_length=20, unique=True)
-    first_name = models.CharField(max_length=150)
-    last_name = models.CharField(max_length=150, blank=True)
+    full_name = models.CharField(max_length=255)
 
     class Meta:
         db_table = "respondent"
         verbose_name_plural = "Respondents"
-        ordering = ["first_name", "last_name", "email"]
+        ordering = ["full_name", "email"]
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.email})"
+        return f"{self.full_name} ({self.email})"
 
 
 class Survey(GlobalAbstractModel):
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    category = models.CharField(max_length=20, choices=SURVEY_CATEGORY_CHOICES, default="other")
     created_by = models.ForeignKey("User", on_delete=models.CASCADE, related_name="created_surveys")
     team = models.ForeignKey("Team", on_delete=models.CASCADE, null=True, blank=True)
-    status = models.CharField(max_length=20, choices=SURVEY_STATUS_CHOICES, default="draft")
+    status = models.CharField(max_length=20, choices=SURVEY_STATUS_CHOICES, default="published")
     allow_multiple_responses = models.BooleanField(default=False)
     start_date = models.DateTimeField(null=True, blank=True)
     end_date = models.DateTimeField(null=True, blank=True)

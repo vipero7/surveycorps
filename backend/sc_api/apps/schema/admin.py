@@ -62,16 +62,15 @@ class TeamAdmin(admin.ModelAdmin):
 @admin.register(Respondent)
 class RespondentAdmin(admin.ModelAdmin):
     list_display = (
-        "first_name",
-        "last_name",
+        "full_name",
         "email",
         "phone_number",
         "response_count",
         "created_at",
     )
     list_filter = ("created_at",)
-    search_fields = ("email", "first_name", "last_name", "phone_number")
-    ordering = ("first_name", "last_name")
+    search_fields = ("email", "full_name", "phone_number")
+    ordering = ("full_name",)
 
     def response_count(self, obj):
         return obj.surveyresponse_set.count()
