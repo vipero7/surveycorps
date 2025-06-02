@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import Cookies from 'universal-cookie';
 import { authAPI } from '../services/api/auth';
 
 const AuthContext = createContext();
@@ -17,7 +18,8 @@ export const AuthProvider = ({ children }) => {
 
 	useEffect(() => {
 		// Check if user is already logged in on app start
-		const accessToken = localStorage.getItem('access_token');
+		const cookies = new Cookies();
+		let accessToken = cookies.get('access_token') || localStorage.getItem('access_token');
 		const userData = localStorage.getItem('user');
 
 		if (accessToken && userData) {
@@ -31,27 +33,41 @@ export const AuthProvider = ({ children }) => {
 			const response = await authAPI.login({ email, password });
 			const { access, refresh, user } = response.data.data;
 
-			// Store tokens
+			const cookies = new Cookies();
+
+			// Store tokens in both cookies (for Django backend) and localStorage (for frontend)
+			cookies.set('access_token', access, { path: '/' });
+			cookies.set('refresh_token', refresh, { path: '/' });
+
 			localStorage.setItem('access_token', access);
 			localStorage.setItem('refresh_token', refresh);
 
-			// Store user data (could be full_name or email)
+			// Store user data
 			localStorage.setItem('user', JSON.stringify(user));
 			setUser(user);
 
 			return { success: true };
 		} catch (error) {
+			console.error('Login error:', error);
 			return {
 				success: false,
-				error: error.response?.data?.message || 'Login failed'
+				error: error.response?.data?.message || error.response?.data?.error || 'Login failed'
 			};
 		}
 	};
 
 	const logout = () => {
+		const cookies = new Cookies();
+
+		// Clear cookies
+		cookies.remove('access_token', { path: '/' });
+		cookies.remove('refresh_token', { path: '/' });
+
+		// Clear localStorage
 		localStorage.removeItem('access_token');
 		localStorage.removeItem('refresh_token');
 		localStorage.removeItem('user');
+
 		setUser(null);
 	};
 

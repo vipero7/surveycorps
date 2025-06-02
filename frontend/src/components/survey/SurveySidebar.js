@@ -1,5 +1,5 @@
 import React from 'react';
-import { Save, Eye } from 'lucide-react';
+import { Save, Send } from 'lucide-react';
 
 const SurveySidebar = ({
     survey,
@@ -24,7 +24,7 @@ const SurveySidebar = ({
                         className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         <Save className="w-4 h-4 mr-2" />
-                        {loading ? 'Saving...' : 'Save as Draft'}
+                        {loading ? 'Saving...' : 'Save'}
                     </button>
 
                     <button
@@ -32,8 +32,8 @@ const SurveySidebar = ({
                         disabled={loading || !canPublish}
                         className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                        <Eye className="w-4 h-4 mr-2" />
-                        {loading ? 'Publishing...' : 'Publish Survey'}
+                        <Send className="w-4 h-4 mr-2" />
+                        {loading ? 'Publishing...' : 'Save and Distribute'}
                     </button>
                 </div>
             </div>
@@ -47,28 +47,36 @@ const SurveySidebar = ({
                         <span className="text-sm text-gray-600">Questions</span>
                         <span className="font-medium">{questions.length}</span>
                     </div>
+                    {survey.category && (
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm text-gray-600">Category</span>
+                            <span className="font-medium text-sm capitalize">{survey.category}</span>
+                        </div>
+                    )}
+                </div>
+            </div>
 
+            {/* Validation Status */}
+            <div className="bg-white rounded-lg shadow p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Validation</h3>
+
+                <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Required</span>
-                        <span className="font-medium">
-                            {questions.filter(q => q.required).length}
+                        <span className="text-sm text-gray-600">Title</span>
+                        <span className={`text-xs ${canSave ? 'text-green-600' : 'text-red-600'}`}>
+                            {canSave ? '✓' : '✗'}
                         </span>
                     </div>
-
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Multiple Choice</span>
-                        <span className="font-medium">
-                            {questions.filter(q => ['radio', 'checkbox', 'dropdown'].includes(q.type)).length}
+                        <span className="text-sm text-gray-600">Questions</span>
+                        <span className={`text-xs ${questions.length > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {questions.length > 0 ? '✓' : '✗'}
                         </span>
                     </div>
-
                     <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-600">Status</span>
-                        <span className={`px-2 py-1 text-xs rounded-full ${survey.status === 'published'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                            {survey.status}
+                        <span className="text-sm text-gray-600">Ready to distribute</span>
+                        <span className={`text-xs ${canPublish ? 'text-green-600' : 'text-red-600'}`}>
+                            {canPublish ? '✓' : '✗'}
                         </span>
                     </div>
                 </div>

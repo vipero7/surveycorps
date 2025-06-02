@@ -1,20 +1,22 @@
-// Question types for survey builder
-export const QUESTION_TYPES = [
-    { value: 'text', label: 'Short Text', icon: '📝' },
-    { value: 'textarea', label: 'Long Text', icon: '📄' },
-    { value: 'email', label: 'Email', icon: '📧' },
-    { value: 'phone', label: 'Phone', icon: '📞' },
-    { value: 'number', label: 'Number', icon: '🔢' },
-    { value: 'radio', label: 'Single Choice', icon: '⚪' },
-    { value: 'checkbox', label: 'Multiple Choice', icon: '☑️' },
-    { value: 'dropdown', label: 'Dropdown', icon: '📋' },
-    { value: 'rating', label: 'Rating Scale', icon: '⭐' },
-    { value: 'date', label: 'Date', icon: '📅' }
+export const SURVEY_CATEGORIES = [
+    { value: "feedback", label: "Customer Feedback" },
+    { value: "satisfaction", label: "Satisfaction Survey" },
+    { value: "research", label: "Market Research" },
+    { value: "employee", label: "Employee Survey" },
+    { value: "event", label: "Event Feedback" },
+    { value: "product", label: "Product Research" },
+    { value: "other", label: "Other" },
 ];
 
-// Survey status options
-export const SURVEY_STATUS = {
-    DRAFT: 'draft',
-    PUBLISHED: 'published',
-    CLOSED: 'closed'
-};
+export const QUESTION_TYPES = [
+    { value: 'text', label: 'Short Text' },
+    { value: 'textarea', label: 'Long Text' },
+    { value: 'number', label: 'Number' },
+    { value: 'email', label: 'Email' },
+    { value: 'phone', label: 'Phone' },
+    { value: 'date', label: 'Date' },
+    { value: 'radio', label: 'Single Choice' },
+    { value: 'checkbox', label: 'Multiple Choice' },
+    { value: 'dropdown', label: 'Dropdown' },
+    { value: 'rating', label: 'Rating' },
+];

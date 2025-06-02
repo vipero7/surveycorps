@@ -1,11 +1,13 @@
 import apiClient from '../apiClient';
 
 export const surveysAPI = {
-    getAll: () => apiClient.get('/surveys/'),
-    getById: (oid) => apiClient.get(`/surveys/${oid}/`),
-    create: (data) => apiClient.post('/surveys/', data),
-    update: (oid, data) => apiClient.put(`/surveys/${oid}/`, data),
-    delete: (oid) => apiClient.delete(`/surveys/${oid}/`),
-    getResponses: (oid) => apiClient.get(`/surveys/${oid}/responses/`),
-    submitResponse: (oid, data) => apiClient.post(`/surveys/${oid}/submit/`, data),
+    getAll: () => apiClient.get('/survey/'),
+    getById: (oid) => apiClient.get(`/survey/${oid}/`),
+    create: (data) => apiClient.post('/survey/', data),
+    update: (oid, data) => apiClient.put(`/survey/${oid}/`, data),
+    delete: (oid) => apiClient.delete(`/survey/${oid}/`),
+    publish: (oid, data = { action: 'publish' }) => apiClient.post(`/survey/${oid}/publish/`, data),
+    getPublic: (oid) => apiClient.get(`/survey/${oid}/fill/`),
+    submitResponse: (oid, data) => apiClient.post(`/survey/${oid}/fill/`, data),
+    getResponses: (oid) => apiClient.get(`/survey/${oid}/responses/`),
 };

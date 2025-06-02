@@ -22,7 +22,8 @@ const CreatePage = () => {
 		addQuestion,
 		updateQuestion,
 		removeQuestion,
-		handleSubmit
+		saveDraft,
+		saveAndDistribute
 	} = useSurveyForm(navigate);
 
 	const handleCSVParsed = (csvQuestions) => {
@@ -59,8 +60,8 @@ const CreatePage = () => {
 						survey={survey}
 						questions={questions}
 						loading={loading}
-						onSaveDraft={() => handleSubmit('draft')}
-						onPublish={() => handleSubmit('published')}
+						onSaveDraft={saveDraft}
+						onPublish={saveAndDistribute}
 					/>
 				}
 			/>

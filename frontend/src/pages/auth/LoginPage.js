@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useNotification } from '../../context/NotificationContext';
 import Button from '../../components/common/Button';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
     const { login, isAuthenticated } = useAuth();
+    const { showError, showSuccess } = useNotification();
 
     // Redirect if already logged in
     if (isAuthenticated) {
@@ -18,12 +19,13 @@ const LoginPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
         const result = await login(email, password);
 
-        if (!result.success) {
-            setError(result.error);
+        if (result.success) {
+            showSuccess('Welcome back! Redirecting to dashboard...');
+        } else {
+            showError(result.error);
         }
 
         setLoading(false);
@@ -72,12 +74,6 @@ const LoginPage = () => {
                             />
                         </div>
                     </div>
-
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
-                            {error}
-                        </div>
-                    )}
 
                     <div>
                         <Button
