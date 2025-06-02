@@ -117,7 +117,13 @@ A full-stack survey application that allows teams to create and distribute surve
    python manage.py createsuperuser
    ```
 
-7. **Run development server**
+7. **Load demo data (optional)**
+   ```bash
+   python manage.py load_demo_data
+   ```
+   This creates sample surveys, teams, and users for testing and development.
+
+8. **Run development server**
    ```bash
    python manage.py runserver
    ```
@@ -137,17 +143,12 @@ A full-stack survey application that allows teams to create and distribute surve
    ```
 
 3. **Environment configuration**
-   Create `.env` file in frontend root:
+   Create `.env.local` file in frontend root:
    ```env
    REACT_APP_API_BASE_URL=http://localhost:8000/
    ```
 
-4. **Install additional dependencies**
-   ```bash
-   npm install recharts universal-cookie
-   ```
-
-5. **Run development server**
+4. **Run development server**
    ```bash
    npm start
    ```
