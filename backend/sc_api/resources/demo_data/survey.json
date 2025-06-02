@@ -1,0 +1,73 @@
+[
+    {
+        "title": "Employee Satisfaction Survey",
+        "description": "Annual employee satisfaction survey to measure workplace happiness",
+        "category": "employee",
+        "status": "published",
+        "allow_multiple_responses": false,
+        "questions": [
+            {
+                "id": "q1",
+                "type": "multiple_choice",
+                "question": "How satisfied are you with your current role?",
+                "required": true,
+                "options": [
+                    "Very Satisfied",
+                    "Satisfied",
+                    "Neutral",
+                    "Dissatisfied",
+                    "Very Dissatisfied"
+                ]
+            },
+            {
+                "id": "q2",
+                "type": "text",
+                "question": "What do you like most about working here?",
+                "required": false
+            },
+            {
+                "id": "q3",
+                "type": "rating",
+                "question": "Rate your work-life balance (1-5)",
+                "required": true,
+                "scale": 5
+            }
+        ],
+        "configs": {
+            "theme": "default",
+            "show_progress": true
+        }
+    },
+    {
+        "title": "Product Feedback Survey",
+        "description": "Help us improve our product with your valuable feedback",
+        "category": "product",
+        "status": "published",
+        "allow_multiple_responses": true,
+        "questions": [
+            {
+                "id": "q1",
+                "type": "multiple_choice",
+                "question": "How often do you use our product?",
+                "required": true,
+                "options": [
+                    "Daily",
+                    "Weekly",
+                    "Monthly",
+                    "Rarely"
+                ]
+            },
+            {
+                "id": "q2",
+                "type": "rating",
+                "question": "Rate the overall user experience (1-5)",
+                "required": true,
+                "scale": 5
+            }
+        ],
+        "configs": {
+            "theme": "modern",
+            "show_progress": false
+        }
+    }
+]
