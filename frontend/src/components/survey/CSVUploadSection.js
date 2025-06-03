@@ -1,7 +1,7 @@
 // CSVUploadSection.js
 import React, { useState } from 'react';
 
-import { AlertCircle, CheckCircle, FileText, Upload } from 'lucide-react';
+import { AlertCircle, CheckCircle, Upload } from 'lucide-react';
 
 const CSVUploadSection = ({ onCSVParsed }) => {
     const [dragActive, setDragActive] = useState(false);

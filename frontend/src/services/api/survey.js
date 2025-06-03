@@ -7,7 +7,7 @@ export const surveysAPI = {
     update: (oid, data) => apiClient.put(`/survey/${oid}/`, data),
     delete: oid => apiClient.delete(`/survey/${oid}/`),
     publish: (oid, data = { action: 'publish' }) => apiClient.post(`/survey/${oid}/publish/`, data),
-    getPublic: oid => apiClient.get(`/survey/${oid}/fill/`),
+    getPublic: oid => apiClient.get(`/survey/${oid}/get-public/`),
     submitResponse: (oid, data) => apiClient.post(`/survey/${oid}/fill/`, data),
     getResponses: oid => apiClient.get(`/survey/${oid}/responses/`),
     checkSubmission: (oid, email) => apiClient.post(`/survey/${oid}/check-submission/`, { email }),

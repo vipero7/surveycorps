@@ -1,7 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
-import { BarChart3, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import Button from '../common/Button';

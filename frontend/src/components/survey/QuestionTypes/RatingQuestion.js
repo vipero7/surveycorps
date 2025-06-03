@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { Star } from 'lucide-react';
-
 const RatingQuestion = ({ question, onUpdate, questionId }) => {
     const scale = question.scale || 5;
 

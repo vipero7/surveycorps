@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-import { ArrowLeft, Check, Copy, Mail } from 'lucide-react';
+import { Check, Copy, Mail } from 'lucide-react';
 
 import Button from '../../components/common/Button';
 import PageHeader from '../../components/layout/PageHeader';

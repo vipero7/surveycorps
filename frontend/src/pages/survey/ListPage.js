@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { Calendar, Edit, Eye, Plus, Share, Trash2 } from 'lucide-react';
+import { Calendar, Eye, Plus, Share, Trash2 } from 'lucide-react';
 
 import Button from '../../components/common/Button';
 import { useNotification } from '../../context/NotificationContext';
