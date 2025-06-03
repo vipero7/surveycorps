@@ -107,7 +107,7 @@ const DistributePage = () => {
         );
     }
 
-    const surveyUrl = `${window.location.origin}/survey/${survey.oid}/fill/`;
+    const surveyUrl = `${window.location.origin}/surveys/${survey.oid}/fill/`;
 
     return (
         <div className="min-h-screen bg-gray-50">

@@ -66,6 +66,14 @@ class Survey(GlobalAbstractModel):
     def public_url(self):
         return f"/surveys/{self.oid}/"
 
+    @property
+    def edit_url(self):
+        return f"/surveys/{self.oid}/edit/"
+
+    @property
+    def responses_url(self):
+        return f"/surveys/{self.oid}/responses/"
+
 
 class SurveyResponse(GlobalAbstractModel):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE, related_name="responses")
