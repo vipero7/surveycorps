@@ -237,7 +237,7 @@ class SurveyPublicView(APIView):
 
             if existing_response:
                 view_submission_url = (
-                    f"{settings.FRONTEND_BASE_URL}/survey/submission/{existing_response.oid}/view"
+                    f"{settings.FRONTEND_BASE_URL}/surveys/submission/{existing_response.oid}/view"
                 )
                 return Response(
                     {
@@ -272,7 +272,7 @@ class SurveyPublicView(APIView):
             )
 
             view_submission_url = (
-                f"{settings.FRONTEND_BASE_URL}/survey/submission/{survey_response.oid}/view"
+                f"{settings.FRONTEND_BASE_URL}/surveys/submission/{survey_response.oid}/view"
             )
 
             try:
@@ -432,7 +432,7 @@ class SurveySubmissionCheckView(APIView):
                 ).first()
 
                 if existing_response:
-                    view_url = f"{settings.FRONTEND_BASE_URL}/survey/submission/{existing_response.oid}/view"
+                    view_url = f"{settings.FRONTEND_BASE_URL}/surveys/submission/{existing_response.oid}/view"
                     return Response(
                         {
                             "success": True,

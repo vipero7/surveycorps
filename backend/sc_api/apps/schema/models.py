@@ -64,15 +64,7 @@ class Survey(GlobalAbstractModel):
 
     @property
     def public_url(self):
-        return f"/survey/{self.oid}/"
-
-    @property
-    def edit_url(self):
-        return f"/survey/{self.oid}/edit/"
-
-    @property
-    def responses_url(self):
-        return f"/survey/{self.oid}/responses/"
+        return f"/surveys/{self.oid}/"
 
 
 class SurveyResponse(GlobalAbstractModel):
@@ -97,7 +89,7 @@ class SurveyResponse(GlobalAbstractModel):
 
     @property
     def response_url(self):
-        return f"/survey/{self.survey.oid}/response/{self.oid}/"
+        return f"/surveys/{self.survey.oid}/response/{self.oid}/"
 
 
 class Team(GlobalAbstractModel):

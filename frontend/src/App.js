@@ -20,9 +20,9 @@ function App() {
                             <Route path="/login" element={<LoginPage />} />
 
                             {/* Public survey completion - NO AUTH REQUIRED */}
-                            <Route path="/survey/:oid/fill" element={<FillPage />} />
+                            <Route path="/surveys/:oid/fill" element={<FillPage />} />
                             <Route
-                                path="/survey/submission/:responseOid/view"
+                                path="/surveys/submission/:responseOid/view"
                                 element={<SubmissionViewPage />}
                             />
 
