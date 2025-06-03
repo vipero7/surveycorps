@@ -58,7 +58,7 @@ const DistributePage = () => {
 
         setSending(true);
         try {
-            const surveyUrl = `${window.location.origin}/survey/${survey.oid}/fill/`;
+            const surveyUrl = `${window.location.origin}/surveys/${survey.oid}/fill/`;
 
             const response = await emailAPI.sendSurveyInvites(survey.oid, {
                 emails: emailList,
@@ -79,7 +79,7 @@ const DistributePage = () => {
     };
 
     const copyToClipboard = async () => {
-        const surveyUrl = `${window.location.origin}/survey/${survey.oid}/fill/`;
+        const surveyUrl = `${window.location.origin}/surveys/${survey.oid}/fill/`;
         try {
             await navigator.clipboard.writeText(surveyUrl);
             setCopied(true);
