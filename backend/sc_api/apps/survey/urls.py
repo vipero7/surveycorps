@@ -20,7 +20,7 @@ urlpatterns = [
         "<str:oid>/check-submission/", SurveySubmissionCheckView.as_view(), name="check_submission"
     ),
     path(
-        "submission/<str:response_oid>/get/",
+        "submission/<str:response_oid>/view/",
         SurveySubmissionView.as_view(),
         name="submission_view",
     ),

@@ -7,7 +7,6 @@ A full-stack survey application that allows teams to create and distribute surve
 ### Survey Creation & Management
 - Create surveys with multiple question types (text, email, phone, radio, checkbox, dropdown, rating, etc.)
 - Import surveys from CSV files
-- Survey lifecycle management (draft, published, closed)
 - Survey analytics and response visualization
 - Team-based survey organization
 
@@ -177,8 +176,7 @@ A full-stack survey application that allows teams to create and distribute surve
 1. **From survey list**, click the distribute button
 2. **Choose distribution method**:
    - Copy public link for manual sharing
-   - Send email invitations with custom message
-   - Embed in external platforms
+   - Send email invitations with custom messagea
 
 ### Taking Surveys
 
@@ -192,8 +190,7 @@ A full-stack survey application that allows teams to create and distribute surve
 
 1. **View survey analytics** from dashboard
 2. **Access detailed responses** through survey detail page
-3. **Export data** for further analysis
-4. **Monitor response rates** with built-in charts
+3. **Monitor response rates** with built-in charts
 
 ## API Endpoints
 
@@ -257,44 +254,6 @@ frontend/
 │   ├── context/             # React Context providers
 │   └── hooks/               # Custom React hooks
 ```
-
-### Contributing
-1. Follow existing code style and patterns
-2. Write comprehensive tests for new features
-3. Update documentation for API changes
-4. Use semantic commit messages
-
-### Testing
-```bash
-# Backend tests
-python manage.py test
-
-# Frontend tests
-npm test
-```
-
-## Deployment
-
-### Backend Deployment
-1. Set production environment variables
-2. Configure PostgreSQL database
-3. Set up email service (SendGrid, AWS SES, etc.)
-4. Configure static file serving
-5. Set up SSL certificates
-
-### Frontend Deployment
-1. Update API base URL for production
-2. Build production bundle: `npm run build`
-3. Deploy to static hosting (Vercel, Netlify, AWS S3)
-4. Configure domain and SSL
-
-## Support
-
-For issues, feature requests, or questions:
-1. Check existing documentation
-2. Review API endpoints and error responses
-3. Check browser console for frontend issues
-4. Review Django logs for backend issues
 
 ## License
 
