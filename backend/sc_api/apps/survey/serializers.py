@@ -1,3 +1,4 @@
+from django.utils import timezone
 from rest_framework import serializers
 from sc_api.apps.schema.models import Survey
 
@@ -67,6 +68,9 @@ class SurveyDetailSerializer(serializers.ModelSerializer):
 
 
 class SurveyCreateUpdateSerializer(serializers.ModelSerializer):
+    start_date = serializers.DateTimeField(required=False, allow_null=True)
+    end_date = serializers.DateTimeField(required=False, allow_null=True)
+
     class Meta:
         model = Survey
         fields = [
@@ -138,22 +142,29 @@ class SurveyCreateUpdateSerializer(serializers.ModelSerializer):
         return value
 
     def validate_start_date(self, value):
-        if value and self.initial_data.get("end_date"):
-            end_date = self.initial_data.get("end_date")
-            if isinstance(end_date, str):
-                from datetime import datetime
+        if value:
+            if timezone.is_naive(value):
+                value = timezone.make_aware(value)
+        return value
 
-                end_date = datetime.fromisoformat(end_date.replace("Z", "+00:00"))
-            if value >= end_date:
-                raise serializers.ValidationError("Start date must be before end date.")
+    def validate_end_date(self, value):
+        if value:
+            if timezone.is_naive(value):
+                value = timezone.make_aware(value)
         return value
 
     def validate(self, attrs):
         start_date = attrs.get("start_date")
         end_date = attrs.get("end_date")
 
-        if start_date and end_date and start_date >= end_date:
-            raise serializers.ValidationError("Start date must be before end date.")
+        if start_date and end_date:
+            if timezone.is_naive(start_date):
+                start_date = timezone.make_aware(start_date)
+            if timezone.is_naive(end_date):
+                end_date = timezone.make_aware(end_date)
+
+            if start_date >= end_date:
+                raise serializers.ValidationError("Start date must be before end date.")
 
         return attrs
 

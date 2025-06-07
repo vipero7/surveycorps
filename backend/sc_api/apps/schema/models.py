@@ -14,7 +14,7 @@ from sc_api.apps.schema.managers import UserManager
 
 class Respondent(GlobalAbstractModel):
     email = models.EmailField(unique=True, validators=[EmailValidator()])
-    phone_number = models.CharField(max_length=20, unique=True)
+    phone_number = models.CharField(max_length=20)
     full_name = models.CharField(max_length=255)
 
     class Meta:
